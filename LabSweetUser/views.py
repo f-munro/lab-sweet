@@ -14,7 +14,8 @@ from .serializers import JobSerializer, TestSerializer, SampleSerializer
 
 '''
 To Do:
-sort out login page HTML
+Clicking on a job shows samples. When a sample is clicked from here, should show the sample view
+selecting 'complete jobs' doesn't work
 making samples and jobs complete
 test outstanding samples works
 jobs outstanding & complete button
@@ -177,9 +178,9 @@ def getJobs(request):
 
     filter = request.GET.get("filter", None)
 
-    if filter == 'outstanding':
+    if filter == 'Outstanding':
         jobs = jobs.filter(complete=False)
-    elif filter == 'complete':
+    elif filter == 'Complete':
         jobs = jobs.filter(complete=True)
 
     if jobs:
