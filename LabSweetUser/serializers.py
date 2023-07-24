@@ -1,14 +1,10 @@
 from rest_framework import serializers
-from .models import Job, Test, Sample, Attribute
+from .models import Job, Sample
 
 
 class SampleSerializer(serializers.ModelSerializer):
     submitted = serializers.SerializerMethodField()
     attribute_name = serializers.SerializerMethodField()
-    '''
-    def get_attribute_name(self, obj):
-        return [test.attribute.get_name_display() for test in obj.tests.all()]
-    '''
 
     def get_attribute_name(self, obj):
         return [test.attribute.get_name_display() for test in obj.tests.all()]
@@ -33,17 +29,3 @@ class JobSerializer(serializers.ModelSerializer):
         model = Job
         fields = ['id', 'job_number', 'due_date', 'complete', 'samples']
         depth = 3
-
-
-class TestSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Test
-        fields = '__all__'
-
-
-class AttributeSerializer(serializers.ModelSerializer):
-    name_display = serializers.CharField(source='get_name_display')
-
-    class Meta:
-        model = Attribute
-        fields = ['get_name_display', 'units']

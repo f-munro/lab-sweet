@@ -10,5 +10,5 @@ urlpatterns = [
     path('samples', views.getSamples, name='samples'),
     path('samples/<str:pk>/', views.getSample, name='sample'),
     path('jobs', views.getJobs, name='jobs'),
-    path('jobs/<str:pk>/', views.getJob, name='job'),
+    path('jobs/<str:job_number>/', views.getJob, name='job'),
     ]

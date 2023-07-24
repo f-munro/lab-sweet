@@ -39,8 +39,9 @@ class Sample(models.Model):
                             null=True)
 
     def __str__(self):
-        return f"Sample: {self.sample_id} \
-                Batch: {self.batch}"
+        return f"| Job: {self.job.job_number} \
+                | Sample: {self.sample_id} \
+                | Batch: {self.batch}"
 
 
 class Attribute(models.Model):
@@ -69,6 +70,23 @@ class Attribute(models.Model):
     def __str__(self):
         return f"{self.get_name_display()}"
 
+    # Create table of attributes
+    @classmethod
+    def create_table(cls):
+        print("Creating attribute table")
+        units = {
+            "AFB": "cfu",
+            "DIA": "schade",
+            "GLY": "ppm",
+            "LPS": "ppm",
+            "TUT": "ppm",
+        }
+        for attr in Attribute.name.field.choices:
+            attribute = cls(
+                name=attr[0], full_name=attr[1], units=units[attr[0]])
+            attribute.save()
+        return
+
 
 class Test(models.Model):
     attribute = models.ForeignKey(Attribute,
@@ -82,7 +100,6 @@ class Test(models.Model):
                               null=True)
     date_completed = models.DateTimeField(blank=True,
                                           null=True)
-    complete = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Sample: {self.sample.sample_id} \

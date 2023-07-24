@@ -12,29 +12,9 @@ from django.db import IntegrityError
 from .models import Job, Test, Sample, Attribute
 from .serializers import SampleSerializer, JobSerializer
 
-'''
-                    _+_+_+_+_+_+_+__TO DO__+_+_+_+_+_+_+_
 
-    X   Need to sort out 'complete' status for everything. Job, samples and
-        tests all have a 'complete' field in the model. How to make
-        samples/jobs complete. Should jobs have a % complete column
-    X   test outstanding samples works
-    X   Latest samples/All samples?
-    X   Make a homepage?
-    X   Improve 'sample details' HTML - put results into a table?
-    X   Add jobs back in but change "get_job" to return from samples instead of jobs
-
-
-job = Job.objects.first()
-samples = job.tests.values('sample').distinct().count()
-tests = job.tests.count()
-progress = job.tests.filter(completed=True).count()
-progress_percent = int(progress / tests * 100)
-print(f"Samples: {samples}")
-print(f"Completed: {tests}")
-print(f"Progress: {progress}/{tests}")
-print(f"Progress Percent: {progress_percent}%")
-'''
+if not Attribute.objects.all():
+    Attribute.create_table()
 
 
 @login_required
@@ -117,21 +97,45 @@ def register(request):
         return render(request, "LabSweetUser/register.html")
 
 
+def check_sample_complete(sample):
+    for test in sample.tests.all():
+        if not test.result:
+            return
+    sample.complete = True
+    sample.save()
+    return
+
+
+def check_job_complete(job):
+    for sample in job.samples.all():
+        if not sample.complete:
+            return
+    job.complete = True
+    job.save()
+    return
+
+
 # API to return multiple samples
 @api_view(['GET'])
 def getSamples(request):
     samples = Sample.objects.filter(user=request.user)
     filter = request.GET.get("filter", None)
-    if filter == 'Outstanding':
-        samples = samples.filter(complete=False)
-    elif filter == 'Complete':
-        samples = samples.filter(complete=True)
+
+    if samples:
+        for sample in samples:
+            if sample.complete is False:
+                check_sample_complete(sample)
+
+        if filter == 'Outstanding':
+            samples = samples.filter(complete=False)
+        elif filter == 'Complete':
+            samples = samples.filter(complete=True)
 
     if samples:
         serializer = SampleSerializer(samples, many=True)
         return Response(serializer.data)
 
-    error = {'error': f'You have no {filter} samples'}
+    error = {'error': 'No samples found'}
     return Response(error)
 
 
@@ -152,30 +156,34 @@ def getJobs(request):
     samples = Sample.objects.filter(user=request.user)
     job_ids = samples.values('job').distinct()
     jobs = Job.objects.filter(id__in=job_ids)
-
     filter = request.GET.get("filter", None)
 
-    if filter == 'Outstanding':
-        jobs = jobs.filter(complete=False)
-    elif filter == 'Complete':
-        jobs = jobs.filter(complete=True)
+    if jobs:
+        for job in jobs:
+            if job.complete is False:
+                check_job_complete(job)
+
+        if filter == 'Outstanding':
+            jobs = jobs.filter(complete=False)
+        elif filter == 'Complete':
+            jobs = jobs.filter(complete=True)
 
     if jobs:
         serializer = JobSerializer(jobs, many=True)
         return Response(serializer.data)
 
-    error = {'error': f"You have no {filter} jobs"}
+    error = {'error': "No jobs found"}
     return Response(error)
 
 
 # API to return a single Job
 @api_view(['GET'])
-def getJob(request, pk):
-    job = request.GET.get("job")
-    samples = Sample.objects.filter(user=request.user).filter(job__in=job)
+def getJob(request, job_number):
+    job = Job.objects.get(job_number=job_number)
+    samples = Sample.objects.filter(user=request.user).filter(job=job)
 
     if samples:
         serializer = SampleSerializer(samples, many=True)
         return Response(serializer.data)
-    error = {'error': f'Job not found'}
+    error = {'error': 'Job not found'}
     return Response(error)
