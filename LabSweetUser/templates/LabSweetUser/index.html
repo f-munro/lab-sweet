@@ -6,8 +6,12 @@
 <div class="container my-4" id="results-view">
     <div class="row" id="table-view">
       <div id="table-name"></div>
-      <div id="table-view" class="col-md-6">
-        <table class="table table-striped table-hover">
+      <div id="table-view" class="col-xl-10">
+        <div class="d-flex col-xl-4 justify-content-between">
+          <input id="job-search" placeholder="Search Job" type="search" class="col-xl-4">
+          <input id="id-search" placeholder="Search ID" type="search" class="col-xl-4">
+        </div>
+        <table id="sample-table" class="table table-striped table-hover">
           <thead>
             <tr id="thead"></tr>
           </thead>
@@ -30,10 +34,7 @@
         <input type="text" class="form-control" name="sample-id" placeholder="Sample ID">
       </div>
       <div class="col-sm-3">
-        <div class="input-group">
-          <div class="input-group-text">Batch</div>
           <input type="text" class="form-control" name="batch" placeholder="Batch">
-        </div>
       </div>
       <div class="col-auto">
         <div class="form-check">

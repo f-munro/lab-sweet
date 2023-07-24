@@ -9,8 +9,6 @@ urlpatterns = [
     path('submitsample', views.submit_sample, name='submitsample'),
     path('samples', views.getSamples, name='samples'),
     path('samples/<str:pk>/', views.getSample, name='sample'),
-    path('tests', views.getTests, name='tests'),
-    path('tests/<str:pk>/', views.getTest, name='test'),
     path('jobs', views.getJobs, name='jobs'),
     path('jobs/<str:pk>/', views.getJob, name='job'),
     ]

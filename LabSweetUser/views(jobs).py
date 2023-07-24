@@ -10,18 +10,21 @@ from django.contrib.auth.models import User
 from django.db import IntegrityError
 
 from .models import Job, Test, Sample, Attribute
-from .serializers import SampleSerializer, JobSerializer
+from .serializers import JobSerializer, TestSerializer, SampleSerializer
 
 '''
                     _+_+_+_+_+_+_+__TO DO__+_+_+_+_+_+_+_
-
+    X   Clicking on a job shows samples. When a sample is clicked from here,
+        should show the sample view
+    X   selecting 'complete jobs' doesn't work
+    X   Sort the HTML for search box. Add one to search for jobs too.
     X   Need to sort out 'complete' status for everything. Job, samples and
         tests all have a 'complete' field in the model. How to make
         samples/jobs complete. Should jobs have a % complete column
     X   test outstanding samples works
     X   Latest samples/All samples?
+    X   Sort sub form boxes - use one kind of label
     X   Make a homepage?
-    X   Improve 'sample details' HTML - put results into a table?
     X   Add jobs back in but change "get_job" to return from samples instead of jobs
 
 
@@ -135,17 +138,6 @@ def getSamples(request):
     return Response(error)
 
 
-# API to return a single sample
-@api_view(['GET'])
-def getSample(request, pk):
-    try:
-        sample = Sample.objects.get(id=pk)
-        sample_json = SampleSerializer(sample)
-        return Response(sample_json.data)
-    except Sample.DoesNotExist:
-        return Response({"error": "Sample not found"})
-
-
 # API to return multiple Jobs
 @api_view(['GET'])
 def getJobs(request):
@@ -171,11 +163,36 @@ def getJobs(request):
 # API to return a single Job
 @api_view(['GET'])
 def getJob(request, pk):
-    job = request.GET.get("job")
-    samples = Sample.objects.filter(user=request.user).filter(job__in=job)
+    try:
+        job = Job.objects.get(id=pk)
+        job_json = JobSerializer(job)
+        return Response(job_json.data)
+    except Job.DoesNotExist:
+        return Response({"error": "Job not found"})
+    except Sample.DoesNotExist:
+        return Response({"error": "Sample not found"})
 
-    if samples:
-        serializer = SampleSerializer(samples, many=True)
+
+# API to return all tests
+@api_view(['GET'])
+def getTests(request):
+    tests = Test.objects.filter(user=request.user)
+
+    if tests:
+        serializer = TestSerializer(tests, many=True)
         return Response(serializer.data)
-    error = {'error': f'Job not found'}
-    return Response(error)
+
+    error = {'error': 'You have no tests'}
+
+
+# API to return a single test
+@api_view(['GET'])
+def getTest(request, pk):
+    try:
+        test = Test.objects.get(id=pk)
+        test_json = TestSerializer(test)
+        return Response(test_json.data)
+    except Test.DoesNotExist:
+        return Response({"error": "Test not found"})
+
+

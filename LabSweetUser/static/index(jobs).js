@@ -1,26 +1,30 @@
+// Clean up load job function
+// Add feedback after samples are submitted
+// Clear form after samples submitted
+
 document.addEventListener('DOMContentLoaded', function () {
     // Get the csrf cookie (taken from the Django documentation)
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== "") {
-            const cookies = document.cookie.split(";");
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                // Does this cookie string begin with the name we want?
-                if (cookie.substring(0, name.length + 1) === name + "=") {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === name + "=") {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
             }
         }
+        }
         return cookieValue;
-    };
+    }; 
 
 
     function add_row() {
         const formRow = document.createElement('div')
         formRow.className = "row form-row mb-2"
-        formRow.innerHTML =
+        formRow.innerHTML = 
             `<div class="col-sm-3">
             <input type="text" class="form-control" name="sample-id" placeholder="Sample ID">
             </div>
@@ -85,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (form.childElementCount <= 1) {
             deleteRowBtn.style.display = "none";
         } else {
-            deleteRowBtn.style.display = "block";
+          deleteRowBtn.style.display = "block";
         }
     }
 
@@ -97,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         Array.from(formRows).forEach(function (row) {
             var checkBoxes = row.querySelectorAll('input[name="test-checkbox"]:checked');
-            var tests = Array.from(checkBoxes).map(function (checkbox) {
+            var tests = Array.from(checkBoxes).map(function(checkbox) {
                 return checkbox.value;
             });
             let sampleId = row.querySelector("input[name='sample-id']")
@@ -131,22 +135,21 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             body: JSON.stringify(submission)
         })
-            .then(response => response.json())
-            .then(result => {
-                alert(result.content, "success")
-                if (result.error) {
-                    alert(result.error, "warning")
-                }
-            })
+        .then(response => response.json())
+        .then(result => {
+          alert(result.content, "success")
+          if (result.error) {
+            alert(result.error, "warning")
+          }
+        })
 
         form.innerHTML = ""
         add_row()
-
+    
     }
-
-
+    
+    
     function fetchSamples(filter) {
-        document.querySelector("#sample-search").style.display = 'block';
         submissionView.style.display = 'none';
         detailsView.style.display = 'none';
         resultsView.style.display = 'block';
@@ -165,7 +168,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         const testBadges = document.createElement('span');
                         sample.tests.forEach(test => {
                             const badge = `<span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis">${test.attribute.name}</span>`
-                            testBadges.innerHTML += badge
+                            testBadges.innerHTML  += badge
                         })
                         const row = document.createElement('tr');
                         row.innerHTML = `<td>${sample.job.job_number}</td>
@@ -179,58 +182,26 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
     }
-
-    function searchSamples(event, column) {
+    
+    function searchSamples(event) {
         filter = event.target.value.toUpperCase()
         table = document.getElementById("sample-table")
         tr = table.getElementsByTagName("tr");
 
         for (i = 0; i < tr.length; i++) {
-            td = tr[i].getElementsByTagName("td")[column];
+            td = tr[i].getElementsByTagName("td")[1];
             if (td) {
-                txtValue = td.textContent || td.innerText;
-                if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                    tr[i].style.display = "";
-                } else {
-                    tr[i].style.display = "none";
-                }
+              txtValue = td.textContent || td.innerText;
+              if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                tr[i].style.display = "";
+              } else {
+                tr[i].style.display = "none";
+              }
             }
         }
     }
 
-
-    function showSampleDetails(sample) {
-        const sampleDetails = document.createElement('div')
-        const testResults = document.createElement('div')
-        const resultsHeader = document.createElement('p')
-
-        submissionView.style.display = 'none';
-        resultsHeader.innerHTML = '<h6 class="my-4"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 16 16" aria-hidden="true" focusable="false" class="icon__test-smallest"><path stroke="currentColor" stroke-width="2" d="M4 1h2v5l-4.175 7.514A1 1 0 002.7 15h10.6a1 1 0 00.875-1.486L10 6V1h2M6 1h4"></path><path fill="currentColor" d="M4.5 13L6 10h4l1.5 3h-7z"></path></svg> Results</h6>'
-
-        sample.tests.forEach(test => {
-            const test_name = test.attribute.full_name
-            var test_result = test.result
-            if (test.result === null) {
-                test_result = "Pending"
-            }
-            const units = `<i><small>${test.attribute.units}</small></i>`
-            testResults.innerHTML += `<p><strong>${test_name}</strong> (${units}): ${test_result}</p>`
-        });
-
-        testResults.prepend(resultsHeader)
-        sampleDetails.innerHTML = `<hr><h3 class="my-4"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="32" fill="none" viewBox="0 0 20 32" aria-hidden="true" focusable="false" class="icon__pottle"><path stroke="currentColor" stroke-width="2" d="M19 31V12a2 2 0 00-2-2H3a2 2 0 00-2 2v19h18zM4 1v6m3 0V1h3v6h3V1h3v6"></path><rect width="18" height="6" x="1" y="1" stroke="currentColor" stroke-width="2" rx="1"></rect><path fill="currentColor" d="M4 17v11h12V17H4z"></path></svg> ${sample.sample_id}</h3>
-                                <div><strong>Date Submitted:</strong> ${sample.submitted}</div>
-                                <div><strong>Batch:</strong> ${sample.batch}</div>
-                                <div><strong>Job:</strong> ${sample.job.job_number}</div>`
-
-        detailsDiv.appendChild(sampleDetails)
-        detailsDiv.appendChild(testResults)
-        tableView.style.display = "none";
-        detailsView.style.display = "block";
-    }
-
     function fetchJobs(filter) {
-        document.querySelector("#sample-search").style.display = 'none';
         submissionView.style.display = 'none';
         detailsView.style.display = 'none';
         resultsView.style.display = 'block';
@@ -242,39 +213,63 @@ document.addEventListener('DOMContentLoaded', function () {
         fetch(`/jobs?filter=${filter}`)
             .then(response => response.json())
             .then(jobs => {
-                if (jobs.error) {
-                    tBody.innerHTML = jobs.error;
-                } else {
-                    jobs.forEach(job => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `<td>${job.job_number}</td>
-                                        <td>${job.samples.length}</td>
-                                        <td>${job.due_date}</td>`
-                        if (job.complete == true) {
-                            row.innerHTML += `<td>Yes</td>`
-                        } else {
-                            row.innerHTML += `<td>No</td>`
-                        }
-                        row.addEventListener('click', () => showJobDetails(job))
-                        tBody.appendChild(row);
-                    });
-                    tHead.innerHTML = '<th>Job Number</th><th>Samples</th><th>Due</th><th>Complete</th>'
-                }
+                jobs.forEach(job => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td>${job.job_number}</td>
+                                    <td>${job.samples.length}</td>
+                                    <td>${job.due_date}</td>`
+                    if (job.complete == true) {
+                        row.innerHTML += `<td>Yes</td>`
+                    } else {
+                        row.innerHTML += `<td>No</td>`
+                    }
+                    row.addEventListener('click', () => showJobDetails(job))
+                    tBody.appendChild(row);
+                });
+                tHead.innerHTML = '<th>Job Number</th><th>Samples</th><th>Due</th><th>Complete</th>'
             });
     }
-
+    
+    
+    function showSampleDetails(sample) {
+        const testResults = document.createElement('p')
+        testResults.innerHTML = '<h4><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 16 16" aria-hidden="true" focusable="false" class="icon__test-smallest"><path stroke="currentColor" stroke-width="2" d="M4 1h2v5l-4.175 7.514A1 1 0 002.7 15h10.6a1 1 0 00.875-1.486L10 6V1h2M6 1h4"></path><path fill="currentColor" d="M4.5 13L6 10h4l1.5 3h-7z"></path></svg> Results</h4>'
+    
+        sample.tests.forEach(test => {
+            console.log(test)
+            console.log(test.result)
+            if (test.result !== null) {
+            const test_name = test.attribute.full_name
+            const test_result = test.result
+            const units = `<i><small>${test.attribute.units}</small></i>`
+            testResults.innerHTML += `<p><strong>${test_name}</strong>: ${test_result} ${units}</p>`
+            }
+        })
+    
+        detailsDiv.innerHTML = `<h3><svg xmlns="http://www.w3.org/2000/svg" width="20" height="32" fill="none" viewBox="0 0 20 32" aria-hidden="true" focusable="false" class="icon__pottle"><path stroke="currentColor" stroke-width="2" d="M19 31V12a2 2 0 00-2-2H3a2 2 0 00-2 2v19h18zM4 1v6m3 0V1h3v6h3V1h3v6"></path><rect width="18" height="6" x="1" y="1" stroke="currentColor" stroke-width="2" rx="1"></rect><path fill="currentColor" d="M4 17v11h12V17H4z"></path></svg> ${sample.sample_id}</h3>
+                                    <p>Date Submitted: ${sample.submitted}</p>
+                                    <p>Batch: ${sample.batch}</p>
+                                    <p>Job: ${sample.job.job_number}</p>`
+        detailsDiv.appendChild(testResults)
+        tableView.style.display = "none";  
+        detailsView.style.display = "block";
+    }
+    
 
     function showJobDetails(job) {
         detailsDiv.innerHTML = "";
-        console.log(job.samples[0].complete)
-        fetch(`/jobs/${job.job_number}`)
-            .then(response => response.json())
-            .then(samples => {
-                samples.forEach(sample => {
-                    showSampleDetails(sample)
-                });
-            });
+    
+        job.samples.forEach(sample => {
+            const sampleDetails = document.createElement('p')
+            sampleDetails.innerHTML = `<h3>${sample.sample_id}</h3>
+                                        <p>Batch: ${sample.batch}</p>
+                                        <p>Date: ${sample.submitted}</p>`
+            detailsDiv.appendChild(sampleDetails)
+        })
+        tableView.style.display = "none";  
+        detailsView.style.display = "block";
     }
+
 
     function loadSubmitSampleView() {
         detailsView.style.display = "none";
@@ -308,56 +303,31 @@ document.addEventListener('DOMContentLoaded', function () {
     const alert = (message, type) => {
         const wrapper = document.createElement("div");
         wrapper.innerHTML = [
-            `<div class="alert alert-${type} alert-dismissible fade show text-center mx-5" role="alert">`,
-            `   <div>${message}</div>`,
-            '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
-            "</div>",
+          `<div class="alert alert-${type} alert-dismissible fade show text-center mx-5" role="alert">`,
+          `   <div>${message}</div>`,
+          '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+          "</div>",
         ].join("");
         document.querySelector("#alert").innerHTML = "";
         document.querySelector("#alert").append(wrapper);
     };
 
-    document.querySelector('#all-samples').addEventListener('click', (event) => {
-        event.preventDefault();
-        fetchSamples('All')
-    });
-    document.querySelector('#complete-samples').addEventListener('click', (event) => {
-        event.preventDefault();
-        fetchSamples('Complete')
-    });
-    document.querySelector('#outstanding-samples').addEventListener('click', (event) => {
-        event.preventDefault();
-        fetchSamples('Outstanding')
-    });
-    document.querySelector('#all-jobs').addEventListener('click', (event) => {
-        event.preventDefault();
-        fetchJobs('All')
-    });
-    document.querySelector('#complete-jobs').addEventListener('click', (event) => {
-        event.preventDefault();
-        fetchJobs('Complete')
-    });
-    document.querySelector('#outstanding-jobs').addEventListener('click', (event) => {
-        event.preventDefault();
-        fetchJobs('Outstanding')
-    });
-
-    document.querySelector('#submit-link').addEventListener('click', (event) => {
-        event.preventDefault();
-        loadSubmitSampleView();
-    });
-
+    document.querySelector('#all-samples').addEventListener('click', () => fetchSamples('All'));
+    document.querySelector('#complete-samples').addEventListener('click', () => fetchSamples('Complete'));
+    document.querySelector('#outstanding-samples').addEventListener('click', () => fetchSamples('Outstanding'));
+    document.querySelector('#all-jobs').addEventListener('click', () => fetchJobs('All'));
+    document.querySelector('#complete-jobs').addEventListener('click', () => fetchJobs('Complete'));
+    document.querySelector('#outstanding-jobs').addEventListener('click', () => fetchJobs('Outstanding'));
+    document.querySelector('#submit-link').addEventListener('click', loadSubmitSampleView);
     document.querySelector("#add-row-btn").addEventListener('click', add_row);
     document.querySelector("#back-btn").addEventListener('click', back_button);
-    document.querySelector("#job-search").addEventListener('keyup', () => searchSamples(0));
-    document.querySelector("#sample-search").addEventListener('keyup', () => searchSamples(1));
+    document.querySelector("#job-search").addEventListener('keyup', searchSamples);
     deleteRowBtn.addEventListener('click', delete_row);
-    submitBtn.addEventListener('click', submit_samples);
+    submitBtn.addEventListener('click', submit_samples)
 
 
     detailsView.style.display = 'none';
     submissionView.style.display = 'none';
     deleteRowBtn.style.display = 'none';
-    resultsView.style.display = "none";
-    fetchSamples('All');
+
 });
