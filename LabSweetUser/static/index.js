@@ -172,6 +172,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                         <td>${sample.sample_id}</td>
                                         <td>${sample.batch}</td>
                                         <td>${testBadges.innerHTML}</td>`
+                        row.className = 'clickable';
                         row.addEventListener('click', () => showSampleDetails(sample))
                         tBody.appendChild(row);
                     });
@@ -289,6 +290,7 @@ document.addEventListener('DOMContentLoaded', function () {
         tableView.style.display = "block";
         detailsDiv.innerHTML = ""
     }
+
 
 
     const currentUser = document.getElementById("current-user").textContent

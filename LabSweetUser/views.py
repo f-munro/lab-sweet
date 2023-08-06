@@ -1,16 +1,25 @@
 import json
+import os
+import csv
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse, FileResponse
 from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 
-from .models import Job, Test, Sample, Attribute
-from .serializers import SampleSerializer, JobSerializer
+from .models import Job, Test, Sample, Attribute, Worklist
+from .serializers import SampleSerializer, JobSerializer, TestSerializer
+
+#   To Do
+#   -   Make 'staff' link, only visible if 'is_staff'
+#   -   Func to write an outstanding worklist to a file. Might be best to conv.
+#       a queryset to a dict, with Test.objects.all().values("field1","field2")
+#       and use csv dictwriter to write to a file
 
 
 if not Attribute.objects.all():
@@ -40,7 +49,7 @@ def submit_sample(request):
 
         for test in tests:
             attribute = Attribute.objects.get(name=test)
-            test_obj = Test.objects.create(
+            Test.objects.create(
                 sample=sample,
                 attribute=attribute
             )
@@ -117,7 +126,7 @@ def check_job_complete(job):
 
 # API to return multiple samples
 @api_view(['GET'])
-def getSamples(request):
+def get_samples(request):
     samples = Sample.objects.filter(user=request.user)
     filter = request.GET.get("filter", None)
 
@@ -141,7 +150,7 @@ def getSamples(request):
 
 # API to return a single sample
 @api_view(['GET'])
-def getSample(request, pk):
+def get_sample(request, pk):
     try:
         sample = Sample.objects.get(id=pk)
         sample_json = SampleSerializer(sample)
@@ -152,7 +161,7 @@ def getSample(request, pk):
 
 # API to return multiple Jobs
 @api_view(['GET'])
-def getJobs(request):
+def get_jobs(request):
     samples = Sample.objects.filter(user=request.user)
     job_ids = samples.values('job').distinct()
     jobs = Job.objects.filter(id__in=job_ids)
@@ -178,7 +187,7 @@ def getJobs(request):
 
 # API to return a single Job
 @api_view(['GET'])
-def getJob(request, job_number):
+def get_job(request, job_number):
     job = Job.objects.get(job_number=job_number)
     samples = Sample.objects.filter(user=request.user).filter(job=job)
 
@@ -187,3 +196,79 @@ def getJob(request, job_number):
         return Response(serializer.data)
     error = {'error': 'Job not found'}
     return Response(error)
+
+
+# Function to allow user to download a csv template:
+@staff_member_required
+def download_template(request):
+
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    filepath = BASE_DIR + '/LabSweetUser/static/styles.css'
+
+    # Set the response content type to plain text file
+    response = FileResponse(open(filepath, 'rb'))
+
+    # Set the content-disposition header to trigger a file download prompt
+    response['Content-Disposition'] = 'attachment; filename="results_template.csv"'
+
+    return response
+
+
+def staff_view(request):
+    return render(request, "LabSweetUser/outstanding_work.html")
+
+
+@api_view(['GET'])
+def outstanding_work_view(request):
+    attributes = Attribute.objects.all()
+    outstanding_tests = []
+    for attribute in attributes:
+        test_count = Test.objects.filter(attribute=attribute).filter(worklist=None).count()
+        if test_count > 0:
+            outstanding_tests.append({"name": attribute.name,
+                                      "full_name": attribute.full_name,
+                                      "test_count": test_count})
+
+    return Response(outstanding_tests)
+
+
+@api_view(['PUT'])
+def generate_worklist(request, test):
+    tests = Test.objects.filter(attribute__name=test).filter(worklist=None)
+
+    if tests:
+        if request.method == 'PUT':
+            worklist = Worklist.create()
+            for test in tests:
+                test.worklist = worklist
+                test.save()
+            serializer = TestSerializer(tests, many=True)
+            return Response(serializer.data)
+
+    error = {'error': f"No outstanding {test} tests"}
+    return Response(error)
+
+
+def download_worklist(request, test):
+    # Get the chosen tests as a dictionary
+    # tests = Test.objects.filter(attribute=test).values()
+    tests = Test.objects.filter(attribute__id=test)
+    test = tests[0]
+    print(f"Attribute:{test.attribute.name}")
+    print(f"sample:{test.sample.job.job_number}")
+    
+    return HttpResponse("Done")
+'''    with open('profiles1.csv', 'w', newline='') as file:
+        writer = csv.writer(file)
+        field = ["name", "age", "country"]
+
+        writer.writerow(field)
+        writer.writerow(["Oladele Damilola", "40", "Nigeria"])
+        writer.writerow(["Alina Hricko", "23", "Ukraine"])
+        writer.writerow(["Isabel Walter", "50", "United Kingdom"])
+        
+        click a test -> generates a w/l
+        call both outstandingWork and generateWorklist
+        click dl button -> dl's the w/l and clears the table
+        '''
+

@@ -1,0 +1,39 @@
+{% extends "LabSweetUser/layout.html" %} 
+{% load static %} 
+{% block body %}
+  <div class="container">
+  <div class="col-xl-4 my-4">
+    <h5>Outstanding Work</h5>
+    <table class="table table-striped table-hover table-bordered">
+      <thead>
+        <tr>
+          <th>Test</th>
+          <th>#</th>
+        </tr>
+      </thead>
+      <tbody id="bod">
+        {% for test in tests %}
+        <tr>
+          <td><a href="#" class="test-link" data-test={{test.name}}>{{ test.full_name }}</a></td>
+          <td>{{ test.test_count }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  </div>
+  <div class="container" id="table-view">
+    <h5 id="table-name"></h5>
+    <table id="test-table" class="table table-striped table-hover table-bordered">
+      <thead>
+        <tr id="thead">
+        </tr>
+      </thead>
+      <tbody id="tbody">
+      </tbody>
+    </table>
+    <div id="download-btn"></div>
+  </div>
+  <script src="{% static 'worklists.js' %}"></script>
+</body>
+{% endblock %}

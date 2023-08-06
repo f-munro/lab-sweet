@@ -88,6 +88,18 @@ class Attribute(models.Model):
         return
 
 
+class Worklist(models.Model):
+    worklist_number = models.CharField(max_length=50, unique=True)
+
+    @classmethod
+    def create(cls):
+        worklist_count = Worklist.objects.count() + 1
+        worklist_number = f"wl-{worklist_count:04d}"
+        worklist = cls(worklist_number=worklist_number)
+        worklist.save()
+        return worklist
+
+
 class Test(models.Model):
     attribute = models.ForeignKey(Attribute,
                                   related_name='tests',
@@ -100,6 +112,11 @@ class Test(models.Model):
                               null=True)
     date_completed = models.DateTimeField(blank=True,
                                           null=True)
+    worklist = models.ForeignKey(Worklist,
+                                 related_name='tests',
+                                 on_delete=models.CASCADE,
+                                 null=True,
+                                 blank=True)
 
     def __str__(self):
         return f"Sample: {self.sample.sample_id} \
