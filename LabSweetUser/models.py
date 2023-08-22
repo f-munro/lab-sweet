@@ -90,6 +90,7 @@ class Attribute(models.Model):
 
 class Worklist(models.Model):
     worklist_number = models.CharField(max_length=50, unique=True)
+    file = models.FileField(upload_to='worklists', blank=True, null=True)
 
     @classmethod
     def create(cls):

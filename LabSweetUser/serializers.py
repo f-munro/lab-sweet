@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Job, Sample, Test
+from .models import Job, Sample, Test, Worklist
 
 
 class SampleSerializer(serializers.ModelSerializer):
@@ -36,3 +36,9 @@ class TestSerializer(serializers.ModelSerializer):
         model = Test
         fields = ['id', 'attribute', 'sample', 'result', 'worklist']
         depth = 2
+
+class WorklistSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Worklist
+        fields = ['worklist_number', 'tests']
+        depth = 3

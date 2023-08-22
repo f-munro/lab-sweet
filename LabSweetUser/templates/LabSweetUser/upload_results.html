@@ -1,0 +1,13 @@
+{% extends "LabSweetUser/layout.html" %} 
+{% load static %} 
+{% block body %}
+<body>
+  <form action="{% url 'upload_results' %}" enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit" value="Submit">
+  </form>
+
+  <script></script>
+</body>
+{% endblock %}

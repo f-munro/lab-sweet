@@ -2,34 +2,47 @@
 {% load static %} 
 {% block body %}
   <div class="container">
-  <div class="col-xl-4 my-4">
-    <h5>Outstanding Work</h5>
+    <div class="d-flex justify-content-evenly">
+      <div id="outstanding-table" class="col-xl-4 my-4">
+        <h5>Outstanding Work</h5>
+        <div class="overflow-y-scroll" style="height: 300px;">
+          <table class="table table-striped table-hover table-bordered">
+            <thead>
+              <tr>
+                <th>Test</th>
+                <th>No. Samples</th>
+              </tr>
+            </thead>
+            <tbody id="outstanding-body">
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div id="worklists-table" class="col-xl-4 my-4">
+        <h5>Worklists</h5>
+        <div class="overflow-y-scroll" style="height: 300px;">
+          <table class="table table-striped table-hover table-bordered">
+            <thead>
+              <tr>
+                <th>Worklist</th>
+                <th>No. Samples</th>
+              </tr>
+            </thead>
+            <tbody id="worklists-body">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container" id="worklist-view">
+    <h5 id="worklist-name"></h5>
     <table class="table table-striped table-hover table-bordered">
       <thead>
-        <tr>
-          <th>Test</th>
-          <th>#</th>
+        <tr id="worklist-view-head">
         </tr>
       </thead>
-      <tbody id="bod">
-        {% for test in tests %}
-        <tr>
-          <td><a href="#" class="test-link" data-test={{test.name}}>{{ test.full_name }}</a></td>
-          <td>{{ test.test_count }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  </div>
-  <div class="container" id="table-view">
-    <h5 id="table-name"></h5>
-    <table id="test-table" class="table table-striped table-hover table-bordered">
-      <thead>
-        <tr id="thead">
-        </tr>
-      </thead>
-      <tbody id="tbody">
+      <tbody id="worklist-view-body">
       </tbody>
     </table>
     <div id="download-btn"></div>

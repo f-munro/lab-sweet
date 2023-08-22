@@ -1,6 +1,7 @@
 import json
 import os
 import csv
+from django import forms
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
@@ -11,17 +12,31 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.models import User
 from django.db import IntegrityError
+from django.core.files import File
 
 from .models import Job, Test, Sample, Attribute, Worklist
-from .serializers import SampleSerializer, JobSerializer, TestSerializer
+from .serializers import SampleSerializer, JobSerializer, TestSerializer, WorklistSerializer
 
 #   To Do
 #   -   Make 'staff' link, only visible if 'is_staff'
+#   -   On staff page - list of worklists and no. of tests on left side, clickable, brings to w/l view
+#   -   Outstanding work tabel on right side. clickable, generates a w/l and brings to w/l view
 #   -   Func to write an outstanding worklist to a file. Might be best to conv.
 #       a queryset to a dict, with Test.objects.all().values("field1","field2")
 #       and use csv dictwriter to write to a file
+#   -   Get single w/l - either do it same as getSampleDetails or getJobDetails
+#   -   Turn results into a table to look better
+#   -   Could remove all due dates?
+#   -   Add a 'complete' checkbox to the sample table?
+#   -   Remove unneeded comments and vars
 
 
+class UploadFileForm(forms.Form):
+    title = forms.CharField(max_length=50)
+    file = forms.FileField()
+
+
+# If it doesn't exist, creates a table of all the attributes in the database.
 if not Attribute.objects.all():
     Attribute.create_table()
 
@@ -31,6 +46,9 @@ def index(request):
     return render(request, 'LabSweetUser/index.html')
 
 
+# Creates a sample for each sample in the request and create
+# Creates the tests for each sample
+# Creates a job to be associated with all the samples in the submission
 @login_required
 def submit_sample(request):
     data = json.loads(request.body)
@@ -198,6 +216,29 @@ def get_job(request, job_number):
     return Response(error)
 
 
+# API to return all existing worklists
+@api_view(['GET'])
+def get_worklists(request):
+    worklists = Worklist.objects.all()
+    if worklists:
+        serializer = WorklistSerializer(worklists, many=True)
+        return Response(serializer.data)
+
+
+# API to return a single worklist
+api_view(['GET'])
+
+
+def get_worklist(request, worklist_number):
+    try:
+        worklist = Worklist.objects.get(worklist_number=worklist_number)
+        serializer = WorklistSerializer(worklist)
+        return Response(serializer.data)
+    except:
+        return Response("Worklist not found")
+
+
+# No longer required?
 # Function to allow user to download a csv template:
 @staff_member_required
 def download_template(request):
@@ -205,7 +246,7 @@ def download_template(request):
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     filepath = BASE_DIR + '/LabSweetUser/static/styles.css'
 
-    # Set the response content type to plain text file
+    # Set the response content
     response = FileResponse(open(filepath, 'rb'))
 
     # Set the content-disposition header to trigger a file download prompt
@@ -218,12 +259,15 @@ def staff_view(request):
     return render(request, "LabSweetUser/outstanding_work.html")
 
 
+# API to return attributes that have outstanding tests,
+# and a count of those tests
 @api_view(['GET'])
 def outstanding_work_view(request):
     attributes = Attribute.objects.all()
     outstanding_tests = []
     for attribute in attributes:
-        test_count = Test.objects.filter(attribute=attribute).filter(worklist=None).count()
+        test_count = Test.objects.filter(
+            attribute=attribute).filter(worklist=None).count()
         if test_count > 0:
             outstanding_tests.append({"name": attribute.name,
                                       "full_name": attribute.full_name,
@@ -232,9 +276,12 @@ def outstanding_work_view(request):
     return Response(outstanding_tests)
 
 
+# API to create a worklist for a given attribute out of tests that have not
+# been assigned a worklist
 @api_view(['PUT'])
-def generate_worklist(request, test):
-    tests = Test.objects.filter(attribute__name=test).filter(worklist=None)
+def generate_worklist(request, attribute):
+    tests = Test.objects.filter(
+        attribute__name=attribute).filter(worklist=None)
 
     if tests:
         if request.method == 'PUT':
@@ -242,33 +289,81 @@ def generate_worklist(request, test):
             for test in tests:
                 test.worklist = worklist
                 test.save()
-            serializer = TestSerializer(tests, many=True)
+            serializer = WorklistSerializer(worklist)
             return Response(serializer.data)
 
     error = {'error': f"No outstanding {test} tests"}
     return Response(error)
 
 
-def download_worklist(request, test):
+# API to create a csv file from a worklist if the file doesn't
+# already exist, and download the csv file
+@api_view(["GET"])
+def download_worklist(request, worklist_number):
     # Get the chosen tests as a dictionary
     # tests = Test.objects.filter(attribute=test).values()
-    tests = Test.objects.filter(attribute__id=test)
-    test = tests[0]
-    print(f"Attribute:{test.attribute.name}")
-    print(f"sample:{test.sample.job.job_number}")
-    
-    return HttpResponse("Done")
-'''    with open('profiles1.csv', 'w', newline='') as file:
-        writer = csv.writer(file)
-        field = ["name", "age", "country"]
+    worklist = Worklist.objects.get(worklist_number=worklist_number)
+    tests = Test.objects.filter(worklist__worklist_number=worklist_number)
+    # tests = Worklist.objects.get(worklist_number=worklist)
 
-        writer.writerow(field)
-        writer.writerow(["Oladele Damilola", "40", "Nigeria"])
-        writer.writerow(["Alina Hricko", "23", "Ukraine"])
-        writer.writerow(["Isabel Walter", "50", "United Kingdom"])
-        
-        click a test -> generates a w/l
-        call both outstandingWork and generateWorklist
-        click dl button -> dl's the w/l and clears the table
-        '''
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    filepath = BASE_DIR + '/LabSweetUser/static/worklists/' + worklist_number + '.csv'
 
+    if not os.path.exists(filepath):
+        with open(filepath, 'w', newline='') as file:
+            writer = csv.writer(file)
+            field = ["LIMS ID", "Sample ID", "Batch",
+                     f"Result ({tests[0].attribute.units})"]
+
+            writer.writerow(field)
+            for test in tests:
+                writer.writerow([
+                    test.id,
+                    test.sample.sample_id,
+                    test.sample.batch
+                ])
+
+    response = FileResponse(open(filepath, 'rb'))
+
+    # Set the content-disposition header to trigger a file download prompt
+    response['Content-Disposition'] = 'attachment;'
+
+    return response
+
+
+# Uploads test results from a csv file of a worklist
+def upload_results(request):
+    if request.method == "POST":
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            file = request.FILES["file"]
+            results = file.read().decode("utf-8")
+            reader = csv.reader(results.splitlines(),
+                                dialect='excel', delimiter=',')
+            next(reader, None)
+            for row in reader:
+                test_id = row[0]
+                result = row[3]
+                test = Test.objects.get(id=test_id)
+                test.result = result
+                test.save()
+
+            return HttpResponseRedirect(reverse("staff"))
+    else:
+        form = UploadFileForm()
+        return render(request, "LabSweetUser/upload_results.html", {"form": form})
+
+
+# NO LONGER NEEDED?
+def handle_results(file):
+    with open(file, 'r') as csvf:
+        reader = csv.reader(csvf.splitlines(), dialect='excel', delimiter=',')
+        next(reader, None)
+        for row in reader:
+            test_id = row[0]
+            result = row[3]
+            print(f"Test ID: {test_id}")
+            print(f"Result: {result}")
+            # test = Test.objects.get(id=test_id)
+            # test.result = result
+            # test.save()

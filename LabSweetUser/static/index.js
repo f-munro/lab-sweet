@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // Get the csrf cookie (taken from the Django documentation)
+
+    // Gets the csrf cookie (taken from the Django documentation)
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== "") {
@@ -17,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
 
+    // Creates a row and appends it to the sample submission form
     function add_row() {
         const formRow = document.createElement('div')
         formRow.className = "row form-row mb-2"
@@ -73,6 +75,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
+    // Deletes a row from the sample submission form
     function delete_row() {
         if (form.childElementCount > 1) {
             form.lastElementChild.remove();
@@ -81,6 +84,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
+    // If the sample submission form contains a single row,
+    // the 'delete row' button is not displayed
     function updateButtonVisibility() {
         if (form.childElementCount <= 1) {
             deleteRowBtn.style.display = "none";
@@ -89,7 +94,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-
+    /** 
+     * Posts each sample and its selected tests in the submission form
+     * to 'submit_sample' in views.py.
+    */
     function submit_samples() {
         let formRows = form.getElementsByClassName("form-row")
         let submission = []
@@ -144,7 +152,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     }
 
-
+    /**
+     * Fetches samples based on the filter used, and builds a
+     * table containing the returned samples.
+     * @param {string} filter - 'All', 'Complete' or 'Outstanding'
+     */
     function fetchSamples(filter) {
         document.querySelector("#sample-search").style.display = 'block';
         submissionView.style.display = 'none';
@@ -181,6 +193,13 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
+
+    /**
+     * Searches the sample table by job number column or sample ID, 
+     * column, depending on the 'column' argument.
+     * @param {*} event 
+     * @param {*} column - '0' for jobs, or '1' for samples
+     */
     function searchSamples(event, column) {
         filter = event.target.value.toUpperCase()
         table = document.getElementById("sample-table")
@@ -199,7 +218,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-
+    /**
+     * Takes a sample and builds a table showing the sample details
+     * and tests associated with the sample
+     */
     function showSampleDetails(sample) {
         const sampleDetails = document.createElement('div')
         const testResults = document.createElement('div')
@@ -230,6 +252,13 @@ document.addEventListener('DOMContentLoaded', function () {
         detailsView.style.display = "block";
     }
 
+
+    /**
+     * Fetches jobs based on the filter used, and builds a
+     * table containing the returned jobs.
+     * 
+     * @param {string} filter - 'All', 'Complete' or 'Outstanding
+     */
     function fetchJobs(filter) {
         document.querySelector("#sample-search").style.display = 'none';
         submissionView.style.display = 'none';
@@ -264,7 +293,10 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
-
+    /**
+     * Takes a job and builds a table showing the job details
+     * and associated samples
+     */
     function showJobDetails(job) {
         detailsDiv.innerHTML = "";
         console.log(job.samples[0].complete)
@@ -277,6 +309,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
+    // Loads the 'submit sample' view
     function loadSubmitSampleView() {
         detailsView.style.display = "none";
         resultsView.style.display = "none";
@@ -284,7 +317,7 @@ document.addEventListener('DOMContentLoaded', function () {
         detailsDiv.innerHTML = ""
     }
 
-
+    // Displays a back button to return from the sample detail view
     function back_button() {
         detailsView.style.display = "none";
         tableView.style.display = "block";
