@@ -15,7 +15,12 @@ from django.db import IntegrityError
 from django.core.files import File
 
 from .models import Job, Test, Sample, Attribute, Worklist
-from .serializers import SampleSerializer, JobSerializer, TestSerializer, WorklistSerializer
+from .serializers import (
+    SampleSerializer,
+    JobSerializer,
+    TestSerializer,
+    WorklistSerializer,
+)
 
 #   To Do
 #   -   Make 'staff' link, only visible if 'is_staff'
@@ -29,7 +34,7 @@ from .serializers import SampleSerializer, JobSerializer, TestSerializer, Workli
 #   -   Could remove all due dates?
 #   -   Add a 'complete' checkbox to the sample table?
 #   -   Remove unneeded comments and vars
-
+#   -   A 'complete' check for the worklists table?
 
 class UploadFileForm(forms.Form):
     title = forms.CharField(max_length=50)
@@ -43,7 +48,7 @@ if not Attribute.objects.all():
 
 @login_required
 def index(request):
-    return render(request, 'LabSweetUser/index.html')
+    return render(request, "LabSweetUser/index.html")
 
 
 # Creates a sample for each sample in the request and create
@@ -59,18 +64,12 @@ def submit_sample(request):
         tests = sample.get("tests")
 
         sample = Sample.objects.create(
-            user=request.user,
-            sample_id=sample_id,
-            batch=batch,
-            job=job
+            user=request.user, sample_id=sample_id, batch=batch, job=job
         )
 
         for test in tests:
             attribute = Attribute.objects.get(name=test)
-            Test.objects.create(
-                sample=sample,
-                attribute=attribute
-            )
+            Test.objects.create(sample=sample, attribute=attribute)
 
     return JsonResponse({"content": "Submitted successfully!"})
 
@@ -85,9 +84,11 @@ def login_view(request):
             login(request, user)
             return HttpResponseRedirect(reverse("index"))
         else:
-            return render(request, "LabSweetUser/login.html", {
-                "message": "Invalid username and/or password."
-            })
+            return render(
+                request,
+                "LabSweetUser/login.html",
+                {"message": "Invalid username and/or password."},
+            )
     else:
         return render(request, "LabSweetUser/login.html")
 
@@ -106,18 +107,22 @@ def register(request):
         password = request.POST["password"]
         confirmation = request.POST["confirmation"]
         if password != confirmation:
-            return render(request, "LabSweetUser/register.html", {
-                "message": "Passwords must match."
-            })
+            return render(
+                request,
+                "LabSweetUser/register.html",
+                {"message": "Passwords must match."},
+            )
 
         # Attempt to create new user
         try:
             user = User.objects.create_user(username, email, password)
             user.save()
         except IntegrityError:
-            return render(request, "LabSweetUser/register.html", {
-                "message": "Username already taken."
-            })
+            return render(
+                request,
+                "LabSweetUser/register.html",
+                {"message": "Username already taken."},
+            )
         login(request, user)
         return HttpResponseRedirect(reverse("index"))
     else:
@@ -143,7 +148,7 @@ def check_job_complete(job):
 
 
 # API to return multiple samples
-@api_view(['GET'])
+@api_view(["GET"])
 def get_samples(request):
     samples = Sample.objects.filter(user=request.user)
     filter = request.GET.get("filter", None)
@@ -153,21 +158,21 @@ def get_samples(request):
             if sample.complete is False:
                 check_sample_complete(sample)
 
-        if filter == 'Outstanding':
+        if filter == "Outstanding":
             samples = samples.filter(complete=False)
-        elif filter == 'Complete':
+        elif filter == "Complete":
             samples = samples.filter(complete=True)
 
     if samples:
         serializer = SampleSerializer(samples, many=True)
         return Response(serializer.data)
 
-    error = {'error': 'No samples found'}
+    error = {"error": "No samples found"}
     return Response(error)
 
 
 # API to return a single sample
-@api_view(['GET'])
+@api_view(["GET"])
 def get_sample(request, pk):
     try:
         sample = Sample.objects.get(id=pk)
@@ -178,10 +183,10 @@ def get_sample(request, pk):
 
 
 # API to return multiple Jobs
-@api_view(['GET'])
+@api_view(["GET"])
 def get_jobs(request):
     samples = Sample.objects.filter(user=request.user)
-    job_ids = samples.values('job').distinct()
+    job_ids = samples.values("job").distinct()
     jobs = Job.objects.filter(id__in=job_ids)
     filter = request.GET.get("filter", None)
 
@@ -190,21 +195,21 @@ def get_jobs(request):
             if job.complete is False:
                 check_job_complete(job)
 
-        if filter == 'Outstanding':
+        if filter == "Outstanding":
             jobs = jobs.filter(complete=False)
-        elif filter == 'Complete':
+        elif filter == "Complete":
             jobs = jobs.filter(complete=True)
 
     if jobs:
         serializer = JobSerializer(jobs, many=True)
         return Response(serializer.data)
 
-    error = {'error': "No jobs found"}
+    error = {"error": "No jobs found"}
     return Response(error)
 
 
 # API to return a single Job
-@api_view(['GET'])
+@api_view(["GET"])
 def get_job(request, job_number):
     job = Job.objects.get(job_number=job_number)
     samples = Sample.objects.filter(user=request.user).filter(job=job)
@@ -212,12 +217,12 @@ def get_job(request, job_number):
     if samples:
         serializer = SampleSerializer(samples, many=True)
         return Response(serializer.data)
-    error = {'error': 'Job not found'}
+    error = {"error": "Job not found"}
     return Response(error)
 
 
 # API to return all existing worklists
-@api_view(['GET'])
+@api_view(["GET"])
 def get_worklists(request):
     worklists = Worklist.objects.all()
     if worklists:
@@ -225,34 +230,32 @@ def get_worklists(request):
         return Response(serializer.data)
 
 
+# DONT THINK THIS IS BEING USED
 # API to return a single worklist
-api_view(['GET'])
-
-
+'''@api_view(["GET"])
 def get_worklist(request, worklist_number):
     try:
         worklist = Worklist.objects.get(worklist_number=worklist_number)
         serializer = WorklistSerializer(worklist)
         return Response(serializer.data)
     except:
-        return Response("Worklist not found")
+        return Response("Worklist not found")'''
 
 
 # No longer required?
 # Function to allow user to download a csv template:
-@staff_member_required
+'''@staff_member_required
 def download_template(request):
-
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    filepath = BASE_DIR + '/LabSweetUser/static/styles.css'
+    filepath = BASE_DIR + "/LabSweetUser/static/styles.css"
 
     # Set the response content
-    response = FileResponse(open(filepath, 'rb'))
+    response = FileResponse(open(filepath, "rb"))
 
     # Set the content-disposition header to trigger a file download prompt
-    response['Content-Disposition'] = 'attachment; filename="results_template.csv"'
+    response["Content-Disposition"] = 'attachment; filename="results_template.csv"'
 
-    return response
+    return response'''
 
 
 def staff_view(request):
@@ -261,30 +264,34 @@ def staff_view(request):
 
 # API to return attributes that have outstanding tests,
 # and a count of those tests
-@api_view(['GET'])
+@api_view(["GET"])
 def outstanding_work_view(request):
     attributes = Attribute.objects.all()
     outstanding_tests = []
     for attribute in attributes:
-        test_count = Test.objects.filter(
-            attribute=attribute).filter(worklist=None).count()
+        test_count = (
+            Test.objects.filter(attribute=attribute).filter(worklist=None).count()
+        )
         if test_count > 0:
-            outstanding_tests.append({"name": attribute.name,
-                                      "full_name": attribute.full_name,
-                                      "test_count": test_count})
+            outstanding_tests.append(
+                {
+                    "name": attribute.name,
+                    "full_name": attribute.full_name,
+                    "test_count": test_count,
+                }
+            )
 
     return Response(outstanding_tests)
 
 
 # API to create a worklist for a given attribute out of tests that have not
 # been assigned a worklist
-@api_view(['PUT'])
+@api_view(["PUT"])
 def generate_worklist(request, attribute):
-    tests = Test.objects.filter(
-        attribute__name=attribute).filter(worklist=None)
+    tests = Test.objects.filter(attribute__name=attribute).filter(worklist=None)
 
     if tests:
-        if request.method == 'PUT':
+        if request.method == "PUT":
             worklist = Worklist.create()
             for test in tests:
                 test.worklist = worklist
@@ -292,7 +299,7 @@ def generate_worklist(request, attribute):
             serializer = WorklistSerializer(worklist)
             return Response(serializer.data)
 
-    error = {'error': f"No outstanding {test} tests"}
+    error = {"error": f"No outstanding {test} tests"}
     return Response(error)
 
 
@@ -307,26 +314,26 @@ def download_worklist(request, worklist_number):
     # tests = Worklist.objects.get(worklist_number=worklist)
 
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    filepath = BASE_DIR + '/LabSweetUser/static/worklists/' + worklist_number + '.csv'
+    filepath = BASE_DIR + "/LabSweetUser/static/worklists/" + worklist_number + ".csv"
 
     if not os.path.exists(filepath):
-        with open(filepath, 'w', newline='') as file:
+        with open(filepath, "w", newline="") as file:
             writer = csv.writer(file)
-            field = ["LIMS ID", "Sample ID", "Batch",
-                     f"Result ({tests[0].attribute.units})"]
+            field = [
+                "LIMS ID",
+                "Sample ID",
+                "Batch",
+                f"Result ({tests[0].attribute.units})",
+            ]
 
             writer.writerow(field)
             for test in tests:
-                writer.writerow([
-                    test.id,
-                    test.sample.sample_id,
-                    test.sample.batch
-                ])
+                writer.writerow([test.id, test.sample.sample_id, test.sample.batch])
 
-    response = FileResponse(open(filepath, 'rb'))
+    response = FileResponse(open(filepath, "rb"))
 
     # Set the content-disposition header to trigger a file download prompt
-    response['Content-Disposition'] = 'attachment;'
+    response["Content-Disposition"] = "attachment;"
 
     return response
 
@@ -338,8 +345,7 @@ def upload_results(request):
         if form.is_valid():
             file = request.FILES["file"]
             results = file.read().decode("utf-8")
-            reader = csv.reader(results.splitlines(),
-                                dialect='excel', delimiter=',')
+            reader = csv.reader(results.splitlines(), dialect="excel", delimiter=",")
             next(reader, None)
             for row in reader:
                 test_id = row[0]
@@ -356,8 +362,8 @@ def upload_results(request):
 
 # NO LONGER NEEDED?
 def handle_results(file):
-    with open(file, 'r') as csvf:
-        reader = csv.reader(csvf.splitlines(), dialect='excel', delimiter=',')
+    with open(file, "r") as csvf:
+        reader = csv.reader(csvf.splitlines(), dialect="excel", delimiter=",")
         next(reader, None)
         for row in reader:
             test_id = row[0]

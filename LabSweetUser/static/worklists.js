@@ -56,6 +56,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 worklists.forEach(worklist => {
                     const row = document.createElement('tr');
                     row.innerHTML = `<td>${worklist.worklist_number}</td>
+                                <td>${worklist.tests[0].attribute.full_name}</td>
                                 <td>${worklist.tests.length}</td>`
                     row.className = 'clickable';
                     row.addEventListener('click', () => showWorklistDetails(worklist))
