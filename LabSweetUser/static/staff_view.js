@@ -46,11 +46,11 @@ document.addEventListener('DOMContentLoaded', function () {
      * worklist number and quantity of tests for each worklist.
      * When a worklist is clicked, it appears below the table.
      */
-    function loadWorklists() {
+    function loadWorklists(filter) {
         worklistsBody.innerHTML = ""
         worklistsTable.style.display = 'block';
-
-        fetch('/worklists')
+        worklistsHeader.innerHTML = `${filter} Worklists`
+        fetch(`/worklists?filter=${filter}`)
             .then(response => response.json())
             .then(worklists => {
                 worklists.forEach(worklist => {
@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(worklist => {
                 showWorklistDetails(worklist)
                 loadOutstandingWork()
-                loadWorklists()
+                loadWorklists("Outstanding")
             })
     }
 
@@ -154,11 +154,16 @@ document.addEventListener('DOMContentLoaded', function () {
     const worklistName = document.querySelector('#worklist-name');
     const outstandingBody = document.querySelector('#outstanding-body')
     const downloadBtnDiv = document.querySelector('#download-btn')
+    const worklistsHeader = document.querySelector('#worklists-header')
     const worklistsTable = document.querySelector('#worklists-table')
     const worklistsBody = document.querySelector('#worklists-body')
     const worklistView = document.querySelector('#worklist-view')
 
+    document.querySelector('#complete-worklists-btn').addEventListener('click', () => loadWorklists("Complete"))
+    document.querySelector('#outstanding-worklists-btn').addEventListener('click', () => loadWorklists("Outstanding"))
+
+
     worklistView.style.display = 'none';
     loadOutstandingWork()
-    loadWorklists()
+    loadWorklists("Outstanding")
 })

@@ -1,13 +1,19 @@
-{% extends "LabSweetUser/layout.html" %} 
+{% extends "LabSweetUser/staff_nav.html" %} 
 {% load static %} 
 {% block body %}
 <body>
-  <form action="{% url 'upload_results' %}" enctype="multipart/form-data" method="post">
-    {% csrf_token %}
-    {{ form }}
-    <input type="submit" value="Submit">
-  </form>
-
+  <div class="d-flex flex-column my-5 align-items-center">
+    <div class="my-5">
+      Upload test results from a CSV template
+    </div>
+      <form action="{% url 'upload_results' %}" enctype="multipart/form-data" method="post">
+        {% csrf_token %}
+        {{ form }}
+        <div class="my-3">
+          <input type="submit" value="Submit">
+        </div>
+      </form>
+  </div>
   <script></script>
 </body>
 {% endblock %}

@@ -163,7 +163,6 @@ document.addEventListener('DOMContentLoaded', function () {
         detailsView.style.display = 'none';
         resultsView.style.display = 'block';
         tableView.style.display = 'block';
-        detailsDiv.innerHTML = '';
         tHead.innerHTML = '';
         tBody.innerHTML = '';
         tableName.innerHTML = `<h3>${filter} Samples</h3>`;
@@ -224,10 +223,18 @@ document.addEventListener('DOMContentLoaded', function () {
      */
     function showSampleDetails(sample) {
         const sampleDetails = document.createElement('div')
-        const testResults = document.createElement('div')
         const resultsHeader = document.createElement('p')
+        const detailsTable = document.createElement('table')
+        detailsTable.className = "table table-striped table-hover table-bordered"
+        const detailsTHead = document.createElement('thead')
+        const detailsTBody = document.createElement('tBody')
+        detailsTHead.innerHTML = 
+            `<tr>
+                <td><strong>Attribute</strong></td>
+                <td><strong>Result</strong></td>
+            </tr>`
+        detailsTable.append(detailsTHead)
 
-        submissionView.style.display = 'none';
         resultsHeader.innerHTML = '<h6 class="my-4"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 16 16" aria-hidden="true" focusable="false" class="icon__test-smallest"><path stroke="currentColor" stroke-width="2" d="M4 1h2v5l-4.175 7.514A1 1 0 002.7 15h10.6a1 1 0 00.875-1.486L10 6V1h2M6 1h4"></path><path fill="currentColor" d="M4.5 13L6 10h4l1.5 3h-7z"></path></svg> Results</h6>'
 
         sample.tests.forEach(test => {
@@ -236,18 +243,21 @@ document.addEventListener('DOMContentLoaded', function () {
             if (test.result === null) {
                 test_result = "Pending"
             }
+            const row = document.createElement('tr')
             const units = `<i><small>${test.attribute.units}</small></i>`
-            testResults.innerHTML += `<p><strong>${test_name}</strong> (${units}): ${test_result}</p>`
+            row.innerHTML = `<td>${test_name} (${units})</td><td>${test_result}</td>`
+            detailsTBody.appendChild(row)
         });
 
-        testResults.prepend(resultsHeader)
         sampleDetails.innerHTML = `<hr><h3 class="my-4"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="32" fill="none" viewBox="0 0 20 32" aria-hidden="true" focusable="false" class="icon__pottle"><path stroke="currentColor" stroke-width="2" d="M19 31V12a2 2 0 00-2-2H3a2 2 0 00-2 2v19h18zM4 1v6m3 0V1h3v6h3V1h3v6"></path><rect width="18" height="6" x="1" y="1" stroke="currentColor" stroke-width="2" rx="1"></rect><path fill="currentColor" d="M4 17v11h12V17H4z"></path></svg> ${sample.sample_id}</h3>
                                 <div><strong>Date Submitted:</strong> ${sample.submitted}</div>
                                 <div><strong>Batch:</strong> ${sample.batch}</div>
-                                <div><strong>Job:</strong> ${sample.job.job_number}</div>`
-
-        detailsDiv.appendChild(sampleDetails)
-        detailsDiv.appendChild(testResults)
+                                <div><strong>Job:</strong> ${sample.job.job_number}</div><br>`
+        detailsTable.append(detailsTBody)
+        //detailsDiv.prepend(resultsHeader)
+        detailsDiv.append(sampleDetails)
+        detailsDiv.append(detailsTable)
+        submissionView.style.display = "none";
         tableView.style.display = "none";
         detailsView.style.display = "block";
     }
@@ -265,7 +275,6 @@ document.addEventListener('DOMContentLoaded', function () {
         detailsView.style.display = 'none';
         resultsView.style.display = 'block';
         tableView.style.display = 'block';
-        detailsDiv.innerHTML = '';
         tHead.innerHTML = '';
         tBody.innerHTML = '';
         tableName.innerHTML = `<h3>${filter} Jobs</h3>`;
@@ -298,8 +307,6 @@ document.addEventListener('DOMContentLoaded', function () {
      * and associated samples
      */
     function showJobDetails(job) {
-        detailsDiv.innerHTML = "";
-        console.log(job.samples[0].complete)
         fetch(`/jobs/${job.job_number}`)
             .then(response => response.json())
             .then(samples => {
@@ -314,14 +321,13 @@ document.addEventListener('DOMContentLoaded', function () {
         detailsView.style.display = "none";
         resultsView.style.display = "none";
         submissionView.style.display = "block";
-        detailsDiv.innerHTML = ""
     }
 
     // Displays a back button to return from the sample detail view
     function back_button() {
         detailsView.style.display = "none";
         tableView.style.display = "block";
-        detailsDiv.innerHTML = ""
+        DetailsDiv.innerHTML = ""
     }
 
 
@@ -336,6 +342,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const tableName = document.querySelector('#table-name');
     const tHead = document.querySelector('#thead')
     const tBody = document.querySelector('#tbody')
+    const DetailsDiv = document.querySelector('#details-div')
     const submitBtn = document.querySelector('#submit-btn')
     const deleteRowBtn = document.querySelector('#delete-row-btn')
     let form = document.querySelector("#sample-submit")
@@ -372,20 +379,23 @@ document.addEventListener('DOMContentLoaded', function () {
         event.preventDefault();
         fetchJobs('Complete')
     });
+
     document.querySelector('#outstanding-jobs').addEventListener('click', (event) => {
         event.preventDefault();
         fetchJobs('Outstanding')
     });
 
-    document.querySelector('#submit-link').addEventListener('click', (event) => {
-        event.preventDefault();
-        loadSubmitSampleView();
-    });
+    if (document.querySelector('#submit-link')) {
+        document.querySelector('#submit-link').addEventListener('click', (event) => {
+            event.preventDefault();
+            loadSubmitSampleView();
+        });
+    }
 
     document.querySelector("#add-row-btn").addEventListener('click', add_row);
     document.querySelector("#back-btn").addEventListener('click', back_button);
-    document.querySelector("#job-search").addEventListener('keyup', () => searchSamples(0));
-    document.querySelector("#sample-search").addEventListener('keyup', () => searchSamples(1));
+    document.querySelector("#job-search").addEventListener('keyup', (e) => searchSamples(e, 0));
+    document.querySelector("#sample-search").addEventListener('keyup', (e) => searchSamples(e, 1));
     deleteRowBtn.addEventListener('click', delete_row);
     submitBtn.addEventListener('click', submit_samples);
 

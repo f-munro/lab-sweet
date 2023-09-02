@@ -1,4 +1,4 @@
-{% extends "LabSweetUser/layout.html" %} 
+{% extends "LabSweetUser/nav.html" %} 
 {% load static %} 
 {% block body %}
 <div id="alert"></div>
@@ -24,7 +24,9 @@
       <div>
         <button class="btn btn-secondary mb-3" id="back-btn">Back</button>
       </div>
-      <div id="details-div"></div>
+      <div>
+        <div id="details-div"></div>
+      </div>
     </div>
 </div>
 <div class="container my-4" id="submission-view">
@@ -91,4 +93,3 @@
 </body>
 
 {% endblock %}
-

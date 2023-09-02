@@ -7,37 +7,27 @@ from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse, FileResponse
+from django.http import HttpResponseRedirect, JsonResponse, FileResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.models import User
 from django.db import IntegrityError
-from django.core.files import File
 
 from .models import Job, Test, Sample, Attribute, Worklist
 from .serializers import (
     SampleSerializer,
     JobSerializer,
-    TestSerializer,
     WorklistSerializer,
 )
 
 #   To Do
-#   -   Make 'staff' link, only visible if 'is_staff'
-#   -   On staff page - list of worklists and no. of tests on left side, clickable, brings to w/l view
-#   -   Outstanding work tabel on right side. clickable, generates a w/l and brings to w/l view
-#   -   Func to write an outstanding worklist to a file. Might be best to conv.
-#       a queryset to a dict, with Test.objects.all().values("field1","field2")
-#       and use csv dictwriter to write to a file
-#   -   Get single w/l - either do it same as getSampleDetails or getJobDetails
-#   -   Turn results into a table to look better
-#   -   Could remove all due dates?
-#   -   Add a 'complete' checkbox to the sample table?
-#   -   Remove unneeded comments and vars
-#   -   A 'complete' check for the worklists table?
+#   +   Sort outstanding work table and wl table when there are no pending/complete wls
+#   +   On the wl details table, should the LIMS ID be the test id or the sample id?
+#   +   Staff can view all sample, customers can view only their own samples
+#   +   Finish read me
+
 
 class UploadFileForm(forms.Form):
-    title = forms.CharField(max_length=50)
     file = forms.FileField()
 
 
@@ -129,6 +119,8 @@ def register(request):
         return render(request, "LabSweetUser/register.html")
 
 
+# Marks a sample as complete by checking if all associated
+# tests have results
 def check_sample_complete(sample):
     for test in sample.tests.all():
         if not test.result:
@@ -138,6 +130,7 @@ def check_sample_complete(sample):
     return
 
 
+# Marks a job as complete if all samples are complete
 def check_job_complete(job):
     for sample in job.samples.all():
         if not sample.complete:
@@ -224,46 +217,31 @@ def get_job(request, job_number):
 # API to return all existing worklists
 @api_view(["GET"])
 def get_worklists(request):
+    filter = request.GET.get("filter", None)
     worklists = Worklist.objects.all()
+
+    if worklists:
+        if filter == 'Outstanding':
+            worklists = worklists.filter(tests__result__isnull=True).distinct()
+        elif filter == 'Complete':
+            worklists = worklists.filter(tests__result__isnull=False).distinct()
+
     if worklists:
         serializer = WorklistSerializer(worklists, many=True)
         return Response(serializer.data)
 
-
-# DONT THINK THIS IS BEING USED
-# API to return a single worklist
-'''@api_view(["GET"])
-def get_worklist(request, worklist_number):
-    try:
-        worklist = Worklist.objects.get(worklist_number=worklist_number)
-        serializer = WorklistSerializer(worklist)
-        return Response(serializer.data)
-    except:
-        return Response("Worklist not found")'''
+    error = {"error": "No worklists found"}
+    return Response(error)
 
 
-# No longer required?
-# Function to allow user to download a csv template:
-'''@staff_member_required
-def download_template(request):
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    filepath = BASE_DIR + "/LabSweetUser/static/styles.css"
-
-    # Set the response content
-    response = FileResponse(open(filepath, "rb"))
-
-    # Set the content-disposition header to trigger a file download prompt
-    response["Content-Disposition"] = 'attachment; filename="results_template.csv"'
-
-    return response'''
-
-
+@staff_member_required
 def staff_view(request):
-    return render(request, "LabSweetUser/outstanding_work.html")
+    return render(request, "LabSweetUser/staff_view.html")
 
 
 # API to return attributes that have outstanding tests,
 # and a count of those tests
+@staff_member_required
 @api_view(["GET"])
 def outstanding_work_view(request):
     attributes = Attribute.objects.all()
@@ -303,15 +281,11 @@ def generate_worklist(request, attribute):
     return Response(error)
 
 
-# API to create a csv file from a worklist if the file doesn't
-# already exist, and download the csv file
+# API to create a csv file of tests in a given worklist if the
+# file doesn't already exist, and download the csv file
 @api_view(["GET"])
 def download_worklist(request, worklist_number):
-    # Get the chosen tests as a dictionary
-    # tests = Test.objects.filter(attribute=test).values()
-    worklist = Worklist.objects.get(worklist_number=worklist_number)
     tests = Test.objects.filter(worklist__worklist_number=worklist_number)
-    # tests = Worklist.objects.get(worklist_number=worklist)
 
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     filepath = BASE_DIR + "/LabSweetUser/static/worklists/" + worklist_number + ".csv"
@@ -319,14 +293,14 @@ def download_worklist(request, worklist_number):
     if not os.path.exists(filepath):
         with open(filepath, "w", newline="") as file:
             writer = csv.writer(file)
-            field = [
+            headers = [
                 "LIMS ID",
                 "Sample ID",
                 "Batch",
-                f"Result ({tests[0].attribute.units})",
+                f"{tests[0].attribute.full_name} Result ({tests[0].attribute.units})",
             ]
 
-            writer.writerow(field)
+            writer.writerow(headers)
             for test in tests:
                 writer.writerow([test.id, test.sample.sample_id, test.sample.batch])
 
@@ -338,14 +312,18 @@ def download_worklist(request, worklist_number):
     return response
 
 
-# Uploads test results from a csv file of a worklist
+# Get the test results from a csv file and save them to each test
 def upload_results(request):
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
             file = request.FILES["file"]
             results = file.read().decode("utf-8")
-            reader = csv.reader(results.splitlines(), dialect="excel", delimiter=",")
+            reader = csv.reader(
+                results.splitlines(),
+                dialect="excel",
+                delimiter=","
+            )
             next(reader, None)
             for row in reader:
                 test_id = row[0]
@@ -358,18 +336,3 @@ def upload_results(request):
     else:
         form = UploadFileForm()
         return render(request, "LabSweetUser/upload_results.html", {"form": form})
-
-
-# NO LONGER NEEDED?
-def handle_results(file):
-    with open(file, "r") as csvf:
-        reader = csv.reader(csvf.splitlines(), dialect="excel", delimiter=",")
-        next(reader, None)
-        for row in reader:
-            test_id = row[0]
-            result = row[3]
-            print(f"Test ID: {test_id}")
-            print(f"Result: {result}")
-            # test = Test.objects.get(id=test_id)
-            # test.result = result
-            # test.save()

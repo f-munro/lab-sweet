@@ -14,20 +14,18 @@ class SampleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Sample
-        fields = ['id', 'user', 'sample_id', 'batch',
-                  'submitted', 'complete', 'job', 'tests', 'attribute_name']
+        fields = [
+            'id', 'user', 'sample_id', 'batch',
+            'submitted', 'complete', 'job', 'tests', 'attribute_name'
+        ]
         depth = 2
 
 
 class JobSerializer(serializers.ModelSerializer):
-    due_date = serializers.SerializerMethodField()
-
-    def get_due_date(self, obj):
-        return obj.due_date.strftime("%d %b %Y")
 
     class Meta:
         model = Job
-        fields = ['id', 'job_number', 'due_date', 'complete', 'samples']
+        fields = ['id', 'job_number', 'complete', 'samples']
         depth = 3
 
 
@@ -36,6 +34,7 @@ class TestSerializer(serializers.ModelSerializer):
         model = Test
         fields = ['id', 'attribute', 'sample', 'result', 'worklist']
         depth = 2
+
 
 class WorklistSerializer(serializers.ModelSerializer):
     class Meta:

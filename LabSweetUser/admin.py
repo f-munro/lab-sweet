@@ -19,7 +19,7 @@ class SampleAdmin(admin.ModelAdmin):
 
 @admin.register(Job)
 class JobAdmin(admin.ModelAdmin):
-    list_display = ('job_number', 'due_date', 'complete')
+    list_display = ('job_number', 'complete')
     '''
     @admin.display(description='Total Tests')
     def test_count(self, obj):
