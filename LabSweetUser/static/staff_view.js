@@ -29,14 +29,18 @@ document.addEventListener('DOMContentLoaded', function () {
         fetch(`/outstanding`)
             .then(response => response.json())
             .then(attributes => {
-                attributes.forEach(attribute => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `<td>${attribute.full_name}</td>
-                                <td>${attribute.test_count}</td>`
-                    row.className = 'clickable'
-                    row.addEventListener('click', () => generateWorklist(attribute.name))
-                    outstandingBody.appendChild(row)
-                })
+                if (attributes.error) {
+                    outstandingBody.innerHTML = attributes.error
+                } else {
+                    attributes.forEach(attribute => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `<td>${attribute.full_name}</td>
+                                    <td>${attribute.test_count}</td>`
+                        row.className = 'clickable'
+                        row.addEventListener('click', () => generateWorklist(attribute.name))
+                        outstandingBody.appendChild(row)
+                    })
+                }
             })
     }
 
@@ -53,15 +57,19 @@ document.addEventListener('DOMContentLoaded', function () {
         fetch(`/worklists?filter=${filter}`)
             .then(response => response.json())
             .then(worklists => {
-                worklists.forEach(worklist => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `<td>${worklist.worklist_number}</td>
-                                <td>${worklist.tests[0].attribute.full_name}</td>
-                                <td>${worklist.tests.length}</td>`
-                    row.className = 'clickable';
-                    row.addEventListener('click', () => showWorklistDetails(worklist))
-                    worklistsBody.appendChild(row);
-                })
+                if (worklists.error) {
+                    worklistBody.innerHTML = worklists.error
+                } else {
+                    worklists.forEach(worklist => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `<td>${worklist.worklist_number}</td>
+                                    <td>${worklist.tests[0].attribute.full_name}</td>
+                                    <td>${worklist.tests.length}</td>`
+                        row.className = 'clickable';
+                        row.addEventListener('click', () => showWorklistDetails(worklist))
+                        worklistsBody.appendChild(row);
+                    })
+                }
             })
     }
 
@@ -95,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function () {
             `<p>Test: ${tests[0].attribute.full_name}<p>
             <p>Worklist: ${worklist.worklist_number}</p`
         WorklistHead.innerHTML =
-            `<th>LIMS ID</th>
+            `<th>Test ID</th>
             <th>Sample</th>
             <th>Batch</th>
             <th>Result (${tests[0].attribute.units})</th>`

@@ -21,10 +21,9 @@ from .serializers import (
 )
 
 #   To Do
-#   +   Sort outstanding work table and wl table when there are no pending/complete wls
-#   +   On the wl details table, should the LIMS ID be the test id or the sample id?
-#   +   Staff can view all sample, customers can view only their own samples
-#   +   Finish read me
+#   +   (DONE?) Sort outstanding work table and wl table when there are no pending/complete wls
+#   +   (DONE?) Staff can view all sample, customers can view only their own samples
+#   +   (DONE?) Finish read me
 
 
 class UploadFileForm(forms.Form):
@@ -143,7 +142,9 @@ def check_job_complete(job):
 # API to return multiple samples
 @api_view(["GET"])
 def get_samples(request):
-    samples = Sample.objects.filter(user=request.user)
+    samples = Sample.objects.all()
+    if not request.user.is_staff:
+        samples.filter(user=request.user)
     filter = request.GET.get("filter", None)
 
     if samples:
@@ -178,7 +179,10 @@ def get_sample(request, pk):
 # API to return multiple Jobs
 @api_view(["GET"])
 def get_jobs(request):
-    samples = Sample.objects.filter(user=request.user)
+    samples = Sample.objects.all()
+    if not request.user.is_staff:
+        samples.filter(user=request.user)
+
     job_ids = samples.values("job").distinct()
     jobs = Job.objects.filter(id__in=job_ids)
     filter = request.GET.get("filter", None)
@@ -259,7 +263,11 @@ def outstanding_work_view(request):
                 }
             )
 
-    return Response(outstanding_tests)
+    if outstanding_tests:
+        return Response(outstanding_tests)
+        
+    error = {"error": "No outstanding tests"}
+    return Response(error) 
 
 
 # API to create a worklist for a given attribute out of tests that have not
