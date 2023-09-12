@@ -23,7 +23,8 @@ class Job(models.Model):
 
 class Sample(models.Model):
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="samples", blank=True, null=True
+        User, on_delete=models.CASCADE, related_name="samples",
+        blank=True, null=True
     )
     sample_id = models.CharField(max_length=50)
     batch = models.CharField(max_length=50)
@@ -108,7 +109,8 @@ class Test(models.Model):
     result = models.CharField(max_length=10, blank=True, null=True)
     date_completed = models.DateTimeField(blank=True, null=True)
     worklist = models.ForeignKey(
-        Worklist, related_name="tests", on_delete=models.CASCADE, null=True, blank=True
+        Worklist, related_name="tests", on_delete=models.CASCADE,
+        null=True, blank=True
     )
 
     def __str__(self):

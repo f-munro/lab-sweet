@@ -24,6 +24,9 @@ from .serializers import (
 #   +   (DONE?) Sort outstanding work table and wl table when there are no pending/complete wls
 #   +   (DONE?) Staff can view all sample, customers can view only their own samples
 #   +   (DONE?) Finish read me
+#   +   DONE Clear sample details after exiting
+#   +   DONE remove due date col
+#   +   complete job not being found
 
 
 class UploadFileForm(forms.Form):
@@ -144,7 +147,7 @@ def check_job_complete(job):
 def get_samples(request):
     samples = Sample.objects.all()
     if not request.user.is_staff:
-        samples.filter(user=request.user)
+        samples = samples.filter(user=request.user)
     filter = request.GET.get("filter", None)
 
     if samples:
@@ -181,7 +184,7 @@ def get_sample(request, pk):
 def get_jobs(request):
     samples = Sample.objects.all()
     if not request.user.is_staff:
-        samples.filter(user=request.user)
+        samples = samples.filter(user=request.user)
 
     job_ids = samples.values("job").distinct()
     jobs = Job.objects.filter(id__in=job_ids)
@@ -209,7 +212,9 @@ def get_jobs(request):
 @api_view(["GET"])
 def get_job(request, job_number):
     job = Job.objects.get(job_number=job_number)
-    samples = Sample.objects.filter(user=request.user).filter(job=job)
+    samples = Sample.objects.filter(job=job)
+    if not request.user.is_staff:
+        samples = samples.filter(user=request.user)
 
     if samples:
         serializer = SampleSerializer(samples, many=True)

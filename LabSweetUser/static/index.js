@@ -161,6 +161,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelector("#sample-search").style.display = 'block';
         submissionView.style.display = 'none';
         detailsView.style.display = 'none';
+        DetailsDiv.innerHTML = ""
         resultsView.style.display = 'block';
         tableView.style.display = 'block';
         tHead.innerHTML = '';
@@ -273,6 +274,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelector("#sample-search").style.display = 'none';
         submissionView.style.display = 'none';
         detailsView.style.display = 'none';
+        DetailsDiv.innerHTML = ""
         resultsView.style.display = 'block';
         tableView.style.display = 'block';
         tHead.innerHTML = '';
@@ -287,8 +289,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     jobs.forEach(job => {
                         const row = document.createElement('tr');
                         row.innerHTML = `<td>${job.job_number}</td>
-                                        <td>${job.samples.length}</td>
-                                        <td>${job.due_date}</td>`
+                                        <td>${job.samples.length}</td>`
                         if (job.complete == true) {
                             row.innerHTML += `<td>Yes</td>`
                         } else {
@@ -297,7 +298,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         row.addEventListener('click', () => showJobDetails(job))
                         tBody.appendChild(row);
                     });
-                    tHead.innerHTML = '<th>Job Number</th><th>Samples</th><th>Due</th><th>Complete</th>'
+                    tHead.innerHTML = '<th>Job Number</th><th>Samples</th><th>Complete</th>'
                 }
             });
     }
