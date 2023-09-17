@@ -2,7 +2,6 @@
 
 from django.db import migrations
 
-
 # Populates the attribute table with the attribute choices.
 def populate_attribute_table(apps, schema_editor):
     Attribute = apps.get_model("LabSweetUser", "Attribute")
