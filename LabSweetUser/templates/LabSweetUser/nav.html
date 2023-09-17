@@ -27,13 +27,12 @@
                     <li><a class="dropdown-item" id="complete-jobs" href="">Complete</a></li>
                     </ul>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="submit-link" href="">Submit Samples</a>
+                </li>
                 {% if user.is_staff %}
                 <li class="nav-item ms-md-auto">
                     <a class="nav-link" href="{% url 'staff' %}">Sample Management</a>
-                </li>
-                {% else %}
-                <li class="nav-item">
-                    <a class="nav-link" id="submit-link" href="">Submit Samples</a>
                 </li>
                 {% endif %}
                 <li class="nav-item ms-md-auto">
