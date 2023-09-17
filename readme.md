@@ -11,6 +11,7 @@ The only additional python package used is the Django REST framework, which offe
 ## Explanation of models
 ### Attribute
 In this project I have chosen a few chemical compounds that are found in honey as the attributes, but they could be anything that a lab tests a sample for, such as chemical compounds, micro organisms or physical properties. The attribute model consists of a long name, an abbreviated name, and the units used to measure the attribute. An attribute is always used with the Test model, with a test representing a test for a particular attribute. A sample can be tested for multiple attributes. The model has a 'create_table' function, which will create the database table of attributes if it doesn't exist.
+A migration file was created in order to initially populate the attribute table with each attribute. This allows the table to be set up automatically when the database is first created with the 'migrate' command.
 
 ### Sample
 A sample represents the physical sample that will be sent to the lab to be tested. Each sample requires a sample ID and a batch number. There can be multiple samples in a batch. The customers will refer to the sample ID when looking for their results, but the lab will refer to the actual unique ID field in the database to ensure they are using a unique value, as multiple samples could be registered as a 'sample 1' for example. The sample model has a 'complete' field. A sample is complete if all of its tests have results.
