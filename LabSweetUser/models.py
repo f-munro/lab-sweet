@@ -66,23 +66,6 @@ class Attribute(models.Model):
     def __str__(self):
         return f"{self.get_name_display()}"
 
-    # Create table of attributes
-    @classmethod
-    def create_table(cls):
-        print("Creating attribute table")
-        units = {
-            "AFB": "cfu",
-            "DIA": "schade",
-            "GLY": "ppm",
-            "LPS": "ppm",
-            "TUT": "ppm",
-        }
-        for attr in Attribute.name.field.choices:
-            attribute = cls(
-                name=attr[0], full_name=attr[1], units=units[attr[0]])
-            attribute.save()
-        return
-
 
 class Worklist(models.Model):
     worklist_number = models.CharField(max_length=50, unique=True)

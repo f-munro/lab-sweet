@@ -20,22 +20,9 @@ from .serializers import (
     WorklistSerializer,
 )
 
-#   To Do
-#   +   (DONE?) Sort outstanding work table and wl table when there are no pending/complete wls
-#   +   (DONE?) Staff can view all sample, customers can view only their own samples
-#   +   (DONE?) Finish read me
-#   +   DONE Clear sample details after exiting
-#   +   DONE remove due date col
-#   +   complete job not being found
-
 
 class UploadFileForm(forms.Form):
     file = forms.FileField()
-
-
-# If it doesn't exist, creates a table of all the attributes in the database.
-if not Attribute.objects.all():
-    Attribute.create_table()
 
 
 @login_required
@@ -270,7 +257,7 @@ def outstanding_work_view(request):
 
     if outstanding_tests:
         return Response(outstanding_tests)
-        
+
     error = {"error": "No outstanding tests"}
     return Response(error) 
 
