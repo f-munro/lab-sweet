@@ -230,14 +230,14 @@ def get_worklists(request):
     return Response(error)
 
 
-@staff_member_required
+# @staff_member_required (Commenting out for demo)
 def staff_view(request):
     return render(request, "LabSweetUser/staff_view.html")
 
 
 # API to return attributes that have outstanding tests,
 # and a count of those tests
-@staff_member_required
+# @staff_member_required (Commenting out for demo)
 @api_view(["GET"])
 def outstanding_work_view(request):
     attributes = Attribute.objects.all()
