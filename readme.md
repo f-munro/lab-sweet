@@ -1,16 +1,14 @@
 # Lab Sweet
 
-## Distinctiveness and Complexity
-This web application is distinct from all of the other projects in this course, as it is not related to social networking, email or e-commerce. It is a LIMS (Laboratory Information Management System) application, consisting of two parts. The first allows customers to register samples to the lab and assign the attributes they would like their samples to be tested for. The customers can also view their samples and check for results. The second part of the app is used by the laboratory staff for sample management. Staff can create worklists from tests the customers have registered, download the worklists as a csv template, and then use the template to upload the results. 
-Allowing for the downloading and uploading of of files is a function not explored in previous projects and adds functionality and complexity to the project.
+## Introduction
+I created this web application as the final project for the Harvard Online course 'Web Development with Python and Javascript'. It is a LIMS (Laboratory Information Management System) application, consisting of two parts. The first allows customers to register samples to the lab and assign the attributes they would like their samples to be tested for. The customers can also view their samples and check for results. The second part of the app is used by the lab staff for sample management. Staff can create worklists from tests the customers have registered, download the worklists as a csv template, and then use the template to upload the results. 
+
 My experience with LIMS systems and how they are used in a real working environment helped me to deal with the complexity of how all the models are related to each other and how they represent real world samples and processes. On the customer side there are jobs containing multiple samples, which can have multiple tests, each of a particular attribute. On the staff side there are worklists containing multiple tests of a particular attribute, each associated with a sample.
 
-The only additional python package used is the Django REST framework, which offers a good way of returning JSON. It was useful for making serializers for each model, to allow querysets to be converted into JSON. These are found in 'serializers.py'. It also displays the data nicely when accessing an API in the browser.
+The only additional python package I used for this project is the Django REST framework, which offers a good way of returning JSON. It was useful for making serializers for each model, to allow querysets to be converted into JSON. These are found in 'serializers.py'. It also displays the data nicely when accessing an API in the browser.
 
 
 ## How to run
-Nothing additional is required to run the app. Just the usual:
-
 Install the requirements from requirements.txt
 run 'python manage.py migrate'
 

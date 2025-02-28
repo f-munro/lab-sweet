@@ -44,14 +44,14 @@ class Attribute(models.Model):
     AMERICAN_FOULBROOD = "AFB"
     DIASTASE = "DIA"
     GLYPHOSATE = "GLY"
-    LEPTOSPERIN = "LPS"
+    UMF = "UMF"
     TUTIN = "TUT"
 
     ATTRIBUTES = [
         (AMERICAN_FOULBROOD, "American Foulbrood"),
         (DIASTASE, "Diastase"),
         (GLYPHOSATE, "Glyphosate"),
-        (LEPTOSPERIN, "Leptosperin"),
+        (UMF, "UMF"),
         (TUTIN, "Tutin"),
     ]
 

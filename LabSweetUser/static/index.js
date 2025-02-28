@@ -64,9 +64,9 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
             <div class="col-auto">
                 <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="test-checkbox" value="LPS">
+                <input class="form-check-input" type="checkbox" name="test-checkbox" value="UMF">
                 <label class="form-check-label" for="we">
-                    Leptosperin
+                    UMF
                 </label>
                 </div>
             </div`

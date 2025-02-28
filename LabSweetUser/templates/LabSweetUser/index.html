@@ -1,6 +1,7 @@
 {% extends "LabSweetUser/nav.html" %} 
 {% load static %} 
 {% block body %}
+<body style="background-color: #fcfaf1;">
 <div id="alert"></div>
 <div id="samples"></div>
 <div class="container my-4" id="results-view">
@@ -75,16 +76,16 @@
       </div>
       <div class="col-auto">
         <div class="form-check">
-          <input class="form-check-input" type="checkbox" name="test-checkbox" value="LPS">
+          <input class="form-check-input" type="checkbox" name="test-checkbox" value="UMF">
           <label class="form-check-label" for="we">
-            Leptosperin
+            UMF
           </label>
         </div>
       </div>
     </div>
   </form>
   <div class="d-inline-flex">
-    <button class="btn btn-primary" type="submit" id="submit-btn">Submit</button>
+    <button class="btn btn-warning" type="submit" id="submit-btn">Submit</button>
     <button class="btn btn-secondary mx-1" type="button" id="add-row-btn">+ Row</button>
     <button class="btn btn-secondary" type="button" id="delete-row-btn">- Row</button>
   </div>
