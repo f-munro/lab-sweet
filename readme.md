@@ -12,7 +12,8 @@ The only additional python package I used for this project is the Django REST fr
 
 ## How to run
 Install the requirements from requirements.txt
-run 'python manage.py migrate'
+
+Run 'python manage.py migrate'
 
 A migration file was created in order to initially populate the attribute table with each attribute. This allows the table to be set up automatically when the database is first created with the 'migrate' command.
 
