@@ -9,7 +9,7 @@ def populate_attribute_table(apps, schema_editor):
             "AFB": "cfu",
             "DIA": "schade",
             "GLY": "ppm",
-            "LPS": "ppm",
+            "UMF": "UMF",
             "TUT": "ppm",
         }
     for attr in Attribute.name.field.choices:

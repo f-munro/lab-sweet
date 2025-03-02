@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             name='Attribute',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(choices=[('AFB', 'American Foulbrood'), ('DIA', 'Diastase'), ('GLY', 'Glyphosate'), ('LPS', 'Leptosperin'), ('TUT', 'Tutin')], max_length=3)),
+                ('name', models.CharField(choices=[('AFB', 'American Foulbrood'), ('DIA', 'Diastase'), ('GLY', 'Glyphosate'), ('UMF', 'UMF'), ('TUT', 'Tutin')], max_length=3)),
                 ('abbreviated_name', models.CharField(max_length=10)),
                 ('units', models.CharField(max_length=6)),
             ],

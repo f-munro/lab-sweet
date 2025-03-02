@@ -27,15 +27,15 @@
     background-color: white;
     border: 1px solid grey;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-  }
+  } 
 
 .clickable {
   cursor: pointer;
 }
 
 .honeycomb {
-  --s: 12px; /* control the size*/
-  --c1: #f7fdff;
+  --s: 12px;
+  --c1: #fcfaf1;
   --c2: #dce0d7;
   
   --c:#0000,var(--c1) .5deg 119.5deg,#0000 120deg;

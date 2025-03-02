@@ -1,5 +1,7 @@
 # Lab Sweet
 
+![Login Page](static/login2.png)
+
 ## Introduction
 I created this web application as the final project for the Harvard Online course 'Web Development with Python and Javascript'. It is a LIMS (Laboratory Information Management System) application, consisting of two parts. The first allows customers to register samples to the lab and assign the attributes they would like their samples to be tested for. The customers can also view their samples and check for results. The second part of the app is used by the lab staff for sample management. Staff can create worklists from tests the customers have registered, download the worklists as a csv template, and then use the template to upload the results. 
 

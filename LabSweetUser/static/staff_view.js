@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const downloadBtn = document.createElement("a")
         downloadBtn.setAttribute("href", "#");
-        downloadBtn.className = 'btn btn-primary'
+        downloadBtn.className = 'btn btn-warning'
         downloadBtn.textContent = `Download File`
         downloadBtn.addEventListener('click', () => downloadWorklist(worklist.worklist_number))
         downloadBtnDiv.appendChild(downloadBtn)
