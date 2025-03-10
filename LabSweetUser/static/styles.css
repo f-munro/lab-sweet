@@ -9,15 +9,36 @@
     }
 }
 
-.bordered-box {
+
+.bg-image {
+  background-image: url('/static/lab1.jpg');
+  width: 100%;
+  height: 100%;
+  top:0;
+  left:0;
+  position: absolute;
+  overflow: hidden;
+}
+
+.color-overlay {
+  position: absolute;
+  width: 100%;
+  top: 0;
+  bottom: 0;
+  background-color: rgba(255, 205, 9, 0.6);
+}
+
+.login-box {
     background-color: white; 
-    border: 2px solid grey;
     display: flex;
     flex-direction: column;
     margin: 3rem;
     padding: 3rem;
     align-items: center;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
+
 
 .table {
     animation-name: showPost;
