@@ -32,8 +32,6 @@
     background-color: white; 
     display: flex;
     flex-direction: column;
-    margin: 3rem;
-    padding: 3rem;
     align-items: center;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
